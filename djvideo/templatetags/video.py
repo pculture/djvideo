@@ -35,6 +35,9 @@ EMBED_MAPPING = {
     'application/x-shockwave-flash': 'flash.html',
     'video/x-flv': 'flash.html',
     'video/flv': 'flash.html',
+    'application/ogg': 'videotag.html',
+    'video/ogg': 'videotag.html',
+    'audio/ogg': 'videotag.html',
 }
 
 YOUTUBE_VIDEO_RE = re.compile(r'http://(www.)?youtube.com/watch\?v=(?P<id>.+)')
