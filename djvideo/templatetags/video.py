@@ -45,7 +45,7 @@ EMBED_MAPPING = {
     'video/flv': 'flash.html',
 }
 
-if getattr(settings, 'XSPF_PLAYER_URL'):
+if getattr(settings, 'XSPF_PLAYER_URL', False):
     EMBED_MAPPING.update({
     'audio/mpeg': 'mp3.html',
     'audio/x-m4a': 'mp3.html',
