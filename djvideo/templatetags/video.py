@@ -20,13 +20,15 @@ DEFAULT_CONTEXT = {
     'settings': settings
     }
 
-OGG_MIME_TYPES = ('application.ogg', 'video/ogg', 'audio/ogg')
+OGG_MIME_TYPES = ('application/ogg', 'video/ogg', 'audio/ogg')
 QUICKTIME_MIME_TYPES = ('video/mp4', 'video/quicktime', 'video/x-m4v',
                         'video/mpeg', 'video/m4v', 'video/mov',
                         'video/x-mp4')
 
 SUPPORTS_VIDEO_TAG = [
     (re.compile('(Firefox|Shiretoko)/3\.[1-9].*'), OGG_MIME_TYPES),
+    (re.compile('Chrome/3\.0\.1(8[2-9]|9)'), # Chrome comes first because it
+     OGG_MIME_TYPES + QUICKTIME_MIME_TYPES), # also reports as Safari
     (re.compile('Safari/(52[6-9]|5[3-9][0-9])\.'), QUICKTIME_MIME_TYPES)
     ]
 
@@ -73,14 +75,13 @@ class VideoNode(Node):
         template_name = EMBED_MAPPING.get(mime_type, 'default.html')
         template = loader.get_template('djvideo/%s' % template_name)
         rendered = template.render(new_context)
-        if mime_type in OGG_MIME_TYPES or mime_type in QUICKTIME_MIME_TYPES:
-            user_agent = context['request'].META.get('HTTP_USER_AGENT')
-            for regexp, mime_types in SUPPORTS_VIDEO_TAG:
-                if mime_type in mime_types:
-                    if regexp.search(user_agent):
-                        new_context['fallback'] = rendered
-                        template = loader.get_template('djvideo/videotag.html')
-                        return template.render(new_context)
+        user_agent = context['request'].META.get('HTTP_USER_AGENT')
+        for regexp, mime_types in SUPPORTS_VIDEO_TAG:
+            if mime_type in mime_types:
+                if regexp.search(user_agent):
+                    new_context['fallback'] = rendered
+                    template = loader.get_template('djvideo/videotag.html')
+                    return template.render(new_context)
         return rendered
 
 
