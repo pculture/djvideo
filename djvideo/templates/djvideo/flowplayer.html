@@ -1,0 +1,21 @@
+<div id="flowplayer" style="width:{{ width }}px;height:{{ height }}px"></div>
+<script src="{{ settings.FLOWPLAYER_JS_URL }}" type="text/javascript"></script>
+<script type="text/javascript">
+flowplayer("flowplayer", {
+    src: "{{ settings.FLOWPLAYER_SWF_URL }}",
+    version: [9, 115],
+    onFail: function()  {
+        document.getElementById("flowplayer").innerHTML = "{% filter escapejs %}{% include "djvideo/quicktime.html" %}{% endfilter %}"
+    }}, {
+        clip: {
+            url: "{{ url }}",
+            {% if autoplay %}autoPlay: true,{% endif %}
+        },
+        {% if settings.FLOWPLAYER_CONTROLS_URL %}
+        plugins: {
+            controls: {
+                url: "{{ settings.FLOWPLAYER_CONTROLS_URL }}",
+            }
+        },{% endif %}
+  });
+</script>

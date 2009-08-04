@@ -39,15 +39,31 @@ EMBED_MAPPING = {
     'video/mpeg': 'quicktime.html',
     'video/m4v': 'quicktime.html',
     'video/mov': 'quicktime.html',
-    'audio/mpeg': 'mp3.html',
-    'audio/x-m4a': 'mp3.html',
-    'audio/mp4': 'mp3.html',
     'video/x-mp4': 'quicktime.html',
-    'audio/mp3': 'mp3.html',
     'application/x-shockwave-flash': 'flash.html',
     'video/x-flv': 'flash.html',
     'video/flv': 'flash.html',
 }
+
+if getattr(settings, 'XSPF_PLAYER_URL'):
+    EMBED_MAPPING.update({
+    'audio/mpeg': 'mp3.html',
+    'audio/x-m4a': 'mp3.html',
+    'audio/mp4': 'mp3.html',
+    'audio/mp3': 'mp3.html',
+    })
+
+if getattr(settings, 'FLOWPLAYER_SWF_URL', False) and \
+        getattr(settings, 'FLOWPLAYER_JS_URL', False):
+    EMBED_MAPPING.update({
+            'video/mp4': 'flowplayer.html',
+            'video/x-mp4': 'flowplayer.html',
+            'video/m4v': 'flowplayer.html',
+            'video/x-m4v': 'flowplayer.html',
+            'video/x-flv': 'flowplayer.html',
+            'video/flv': 'flowplayer.html',
+
+            })
 
 YOUTUBE_VIDEO_RE = re.compile(r'http://(www.)?youtube.com/watch\?v=(?P<id>.+)')
 
