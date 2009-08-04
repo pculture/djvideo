@@ -1,4 +1,4 @@
 <video width="{{ width }}" height="{{ height }}" controls="controls">
   <source src="{{ url }}" type="{{ mime_type }}">
-  {% block fallback %}{% endblock %}
-{% endblock %}
+  {{ fallback }}
+</video>

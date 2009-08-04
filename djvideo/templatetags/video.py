@@ -20,6 +20,16 @@ DEFAULT_CONTEXT = {
     'settings': settings
     }
 
+OGG_MIME_TYPES = ('application.ogg', 'video/ogg', 'audio/ogg')
+QUICKTIME_MIME_TYPES = ('video/mp4', 'video/quicktime', 'video/x-m4v',
+                        'video/mpeg', 'video/m4v', 'video/mov',
+                        'video/x-mp4')
+
+SUPPORTS_VIDEO_TAG = [
+    (re.compile('(Firefox|Shiretoko)/3\.[1-9].*'), OGG_MIME_TYPES),
+    (re.compile('Safari/(52[6-9]|5[3-9][0-9])\.'), QUICKTIME_MIME_TYPES)
+    ]
+
 EMBED_MAPPING = {
     'video/mp4': 'quicktime.html',
     'video/quicktime': 'quicktime.html',
@@ -35,9 +45,6 @@ EMBED_MAPPING = {
     'application/x-shockwave-flash': 'flash.html',
     'video/x-flv': 'flash.html',
     'video/flv': 'flash.html',
-    'application/ogg': 'videotag.html',
-    'video/ogg': 'videotag.html',
-    'audio/ogg': 'videotag.html',
 }
 
 YOUTUBE_VIDEO_RE = re.compile(r'http://(www.)?youtube.com/watch\?v=(?P<id>.+)')
@@ -65,7 +72,16 @@ class VideoNode(Node):
         mime_type = new_context.get('mime_type')
         template_name = EMBED_MAPPING.get(mime_type, 'default.html')
         template = loader.get_template('djvideo/%s' % template_name)
-        return template.render(new_context)
+        rendered = template.render(new_context)
+        if mime_type in OGG_MIME_TYPES or mime_type in QUICKTIME_MIME_TYPES:
+            user_agent = context['request'].META.get('HTTP_USER_AGENT')
+            for regexp, mime_types in SUPPORTS_VIDEO_TAG:
+                if mime_type in mime_types:
+                    if regexp.search(user_agent):
+                        new_context['fallback'] = rendered
+                        template = loader.get_template('djvideo/videotag.html')
+                        return template.render(new_context)
+        return rendered
 
 
 @register.tag

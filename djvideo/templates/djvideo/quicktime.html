@@ -1,5 +1,3 @@
-{% extends "djvideo/videotag.html" %}
-{% block fallback %}
 <object id="video" classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" width="%i" height="%i" codebase="http://www.apple.com/qtactivex/qtplugin.cab">
   <param name="src" value="{{ url }}">
   <param name="scale" value="aspect">
@@ -8,4 +6,3 @@
   <embed src="{{ url }}" name="movieobject" scale="aspect" width="{{ width }}" height="{{ height|add:15 }}" {% if autoplay %}autoplay="true" {% endif %}controller="true" pluginspage="http://www.apple.com/quicktime/download/">
   </embed>
 </object>
-{% endblock %}
