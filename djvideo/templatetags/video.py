@@ -27,8 +27,9 @@ QUICKTIME_MIME_TYPES = ('video/mp4', 'video/quicktime', 'video/x-m4v',
 
 SUPPORTS_VIDEO_TAG = [
     (re.compile('(Firefox|Shiretoko)/3\.[1-9].*'), OGG_MIME_TYPES),
-    (re.compile('Chrome/3\.0\.1(8[2-9]|9)'), # Chrome comes first because it
-     OGG_MIME_TYPES + QUICKTIME_MIME_TYPES), # also reports as Safari
+    (re.compile('Chrome/(3\.0\.1(8[2-9]|9)|4)'), # Chrome comes first because
+                                                 # it also reports as Safari
+     OGG_MIME_TYPES + QUICKTIME_MIME_TYPES),
     (re.compile('Safari/(52[6-9]|5[3-9][0-9])\.'), QUICKTIME_MIME_TYPES)
     ]
 
