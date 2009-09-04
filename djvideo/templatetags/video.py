@@ -1,3 +1,4 @@
+import mimetypes
 import re
 from django.conf import settings
 from django.template import Context, Library, Node, Variable, loader, \
@@ -89,6 +90,8 @@ class VideoNode(Node):
             new_context['mime_type'] = 'video/flv'
 
         mime_type = new_context.get('mime_type')
+        if not mime_type:
+            mime_type, _ = mimetypes.guess_type(new_context['url'])
         template_name = EMBED_MAPPING.get(mime_type, 'default.html')
         template = loader.get_template('djvideo/%s' % template_name)
         rendered = template.render(new_context)
