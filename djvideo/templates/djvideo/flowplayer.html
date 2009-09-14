@@ -1,4 +1,6 @@
-<div id="flowplayer" style="width:{{ width }}px;height:{{ height }}px"></div>
+<div id="flowplayer" style="width:{{ width }}px;height:{{ height }}px">
+{% if poster and not autoplay %}<img src="{{ poster }}" />{% endif %}
+</div>
 <script src="{{ settings.FLOWPLAYER_JS_URL }}" type="text/javascript"></script>
 <script type="text/javascript">
 flowplayer("flowplayer", {
@@ -9,7 +11,7 @@ flowplayer("flowplayer", {
     }}, {
         clip: {
             url: "{{ url }}",
-            autoPlay: {% if autoplay %}true{% else %}false{% endif %},
+            autoPlay: {% if autoplay or poster %}true{% else %}false{% endif %},
         },
         {% if settings.FLOWPLAYER_CONTROLS_URL %}
         plugins: {

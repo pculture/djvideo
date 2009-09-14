@@ -12,7 +12,7 @@ def _get_variable_or_string(name):
     else:
         return Variable(name)
 
-ACCEPTED_KEYS = ('title', 'width', 'height', 'autoplay', 'mime_type')
+ACCEPTED_KEYS = ('title', 'width', 'height', 'autoplay', 'mime_type', 'poster')
 
 DEFAULT_CONTEXT = {
     'height': 360,
