@@ -9,7 +9,7 @@ flowplayer("flowplayer", {
     }}, {
         clip: {
             url: "{{ url }}",
-            {% if autoplay %}autoPlay: true,{% endif %}
+            autoPlay: {% if autoplay %}true{% else %}false{% endif %},
         },
         {% if settings.FLOWPLAYER_CONTROLS_URL %}
         plugins: {
