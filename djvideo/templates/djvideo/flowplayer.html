@@ -24,16 +24,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {% endcomment %}
-<div id="flowplayer" style="width:{{ width }}px;height:{{ height }}px">
+<div id="flowplayer-{{ hash }}" style="width:{{ width }}px;height:{{ height }}px">
 {% if poster and not autoplay %}<img src="{{ poster }}" />{% endif %}
 </div>
 <script src="{{ settings.FLOWPLAYER_JS_URL }}" type="text/javascript"></script>
 <script type="text/javascript">
-flowplayer("flowplayer", {
+flowplayer("flowplayer-{{ hash }}", {
     src: "{{ settings.FLOWPLAYER_SWF_URL }}",
     version: [9, 115],
     onFail: function()  {
-        document.getElementById("flowplayer").innerHTML = "{% filter escapejs %}{% include "djvideo/quicktime.html" %}{% endfilter %}"
+        document.getElementById("flowplayer-{{ hash }}").innerHTML = "{% filter escapejs %}{% include "djvideo/quicktime.html" %}{% endfilter %}"
     }}, {
         clip: {
             url: "{{ url }}",

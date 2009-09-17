@@ -119,6 +119,7 @@ class VideoNode(Node):
         if not mime_type:
             mime_type, _ = mimetypes.guess_type(new_context['url'])
             new_context['mime_type'] = mime_type
+        new_context['hash'] = hash(new_context)
         template_name = EMBED_MAPPING.get(mime_type, 'default.html')
         template = loader.get_template('djvideo/%s' % template_name)
         rendered = template.render(new_context)
