@@ -124,12 +124,13 @@ class VideoNode(Node):
         template = loader.get_template('djvideo/%s' % template_name)
         rendered = template.render(new_context)
         user_agent = context['request'].META.get('HTTP_USER_AGENT')
-        for regexp, mime_types in SUPPORTS_VIDEO_TAG:
-            if mime_type in mime_types:
-                if regexp.search(user_agent):
-                    new_context['fallback'] = rendered
-                    template = loader.get_template('djvideo/videotag.html')
-                    return template.render(new_context)
+        if user_agent:
+            for regexp, mime_types in SUPPORTS_VIDEO_TAG:
+                if mime_type in mime_types:
+                    if regexp.search(user_agent):
+                        new_context['fallback'] = rendered
+                        template = loader.get_template('djvideo/videotag.html')
+                        return template.render(new_context)
         return rendered
 
 
