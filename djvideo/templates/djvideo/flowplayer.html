@@ -38,6 +38,7 @@ flowplayer("flowplayer-{{ hash }}", {
         clip: {
             url: "{{ url }}",
             autoPlay: {% if autoplay or poster %}true{% else %}false{% endif %},
+            scaling: 'fit',
         },
         {% if settings.FLOWPLAYER_CONTROLS_URL %}
         plugins: {
