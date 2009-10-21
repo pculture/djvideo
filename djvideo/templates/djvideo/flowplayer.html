@@ -31,7 +31,7 @@
 <script type="text/javascript">
 flowplayer("flowplayer-{{ hash }}", {
     src: "{{ settings.FLOWPLAYER_SWF_URL }}",
-    wmode: 'transparent'
+    wmode: 'transparent',
     version: [9, 115],
     onFail: function()  {
         document.getElementById("flowplayer-{{ hash }}").innerHTML = "{% filter escapejs %}{% include "djvideo/quicktime.html" %}{% endfilter %}"
