@@ -46,7 +46,11 @@ DEFAULT_CONTEXT = {
     'settings': settings
     }
 
-OGG_MIME_TYPES = ('application/ogg', 'video/ogg', 'audio/ogg')
+OGG_MIME_TYPES = ('application/ogg', 'video/ogg', 'audio/ogg',
+                  'application/annodex', 'video/annodex', 'audio/annodex',
+                  'application/x-annodex', 'video/x-annodex',
+                  'audio/x-annodex', 'application/kate', 'application/x-kate')
+
 QUICKTIME_MIME_TYPES = ('video/mp4', 'video/quicktime', 'video/x-m4v',
                         'video/mpeg', 'video/m4v', 'video/mov',
                         'video/x-mp4')
