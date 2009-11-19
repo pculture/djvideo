@@ -156,3 +156,12 @@ def video(parser, token):
         context[name.strip()] = _get_variable_or_string(value)
 
     return VideoNode(context)
+
+
+@register.filter
+def is_ogg_media(mime_type):
+    return mime_type in OGG_MIME_TYPES
+
+@register.filter
+def is_quicktime_media(mime_type):
+    return mime_type in QUICKTIME_MIME_TYPES
