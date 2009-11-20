@@ -25,4 +25,10 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {% endcomment %}
 
-<embed width="{{ width }}" height="{{ height }}" src="{{ url }}" autoplay="{% if autoplay %}true{% else %}false{% endif %}"></embed>
+<object data="{{ url }}"{% if mime_type %} type="{{ mime_type }}"{% endif %}>
+  <param name="width" value="{{ width }}">
+  <param name="height" value="{{ height }}">
+  <param name="src" value="{{ url }}">
+  {% if mime_type %}<param name="type" value="{{ mime_type }}">{% endif %}
+  <param name="autoplay" value="{% if autoplay %}true{% else %}false{% endif %}">
+</object>
