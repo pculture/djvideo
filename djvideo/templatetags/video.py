@@ -28,6 +28,7 @@ import re
 from django.conf import settings
 from django.template import Context, Library, Node, Variable, loader, \
     TemplateSyntaxError
+from django.utils.cache import patch_vary_headers
 
 register = Library()
 
@@ -128,6 +129,7 @@ class VideoNode(Node):
         template = loader.get_template('djvideo/%s' % template_name)
         rendered = template.render(new_context)
         user_agent = context['request'].META.get('HTTP_USER_AGENT')
+        patch_vary_headers(context['request'], ['User-Agent'])
         if user_agent:
             for regexp, mime_types in SUPPORTS_VIDEO_TAG:
                 if mime_type in mime_types:
