@@ -49,7 +49,8 @@ DEFAULT_CONTEXT = {
 OGG_MIME_TYPES = ('application/ogg', 'video/ogg', 'audio/ogg',
                   'application/annodex', 'video/annodex', 'audio/annodex',
                   'application/x-annodex', 'video/x-annodex',
-                  'audio/x-annodex', 'application/kate', 'application/x-kate')
+                  'audio/x-annodex', 'application/kate', 'application/x-kate',
+                  'audio/vorbia', 'video/theora')
 
 QUICKTIME_MIME_TYPES = ('video/mp4', 'video/quicktime', 'video/x-m4v',
                         'video/mpeg', 'video/m4v', 'video/mov',
