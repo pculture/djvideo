@@ -24,9 +24,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {% endcomment %}
-<div id="flowplayer-{{ hash }}" style="width:{{ width }}px;height:{{ height }}px" class="djvideo-flowplayer">
-{% if poster and not autoplay %}<img src="{{ poster }}" />{% endif %}
-</div>
+<div id="flowplayer-{{ hash }}" style="width:{{ width }}px;height:{{ height }}px" class="djvideo-flowplayer"></div>
 <script src="{{ settings.FLOWPLAYER_JS_URL }}" type="text/javascript"></script>
 <script type="text/javascript">
 flowplayer("flowplayer-{{ hash }}", {
@@ -37,10 +35,17 @@ flowplayer("flowplayer-{{ hash }}", {
         document.getElementById("flowplayer-{{ hash }}").innerHTML = "{% filter escapejs %}{% include "djvideo/quicktime.html" %}{% endfilter %}"
     }}, {
         clip: {
-            url: "{{ url }}",
-            autoPlay: {% if autoplay or poster %}true{% else %}false{% endif %},
             scaling: 'fit',
         },
+        playlist: [
+            {% if poster %}{
+                url: "{{ poster }}",
+            },{% endif %}
+            {
+                url: "{{ url }}",
+                autoPlay: {% if not autoplay or poster %}false{% else %}true{% endif %},
+            }
+        ],
         {% if settings.FLOWPLAYER_CONTROLS_URL %}
         plugins: {
             controls: {
