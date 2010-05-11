@@ -35,7 +35,7 @@ flowplayer("flowplayer-{{ hash }}", {
         document.getElementById("flowplayer-{{ hash }}").innerHTML = "{% filter escapejs %}{% include "djvideo/quicktime.html" %}{% endfilter %}"
     }}, {
         clip: {
-            scaling: 'fit',
+            scaling: 'scale',
         },
         playlist: [
             {% if poster %}{
