@@ -27,30 +27,7 @@
 <div id="flowplayer-{{ hash }}" style="width:{{ width }}px;height:{{ height }}px" class="djvideo-flowplayer"></div>
 <script src="{{ settings.FLOWPLAYER_JS_URL }}" type="text/javascript"></script>
 <script type="text/javascript">
-flowplayer("flowplayer-{{ hash }}", {
-    src: "{{ settings.FLOWPLAYER_SWF_URL }}",
-    wmode: 'transparent',
-    version: [9, 115],
-    onFail: function()  {
-        document.getElementById("flowplayer-{{ hash }}").innerHTML = "{% filter escapejs %}{% include "djvideo/quicktime.html" %}{% endfilter %}"
-    }}, {
-        clip: {
-            scaling: 'scale',
-        },
-        playlist: [
-            {% if poster %}{
-                url: "{{ poster }}",
-            },{% endif %}
-            {
-                url: "{{ url }}",
-                autoPlay: {% if not autoplay or poster %}false{% else %}true{% endif %},
-            }
-        ],
-        {% if settings.FLOWPLAYER_CONTROLS_URL %}
-        plugins: {
-            controls: {
-                url: "{{ settings.FLOWPLAYER_CONTROLS_URL }}",
-            }
-        },{% endif %}
-  });
+var _flowplayer_data = {{ flowplayer_data_as_json|safe }};
+ _flowplayer_data["onFail"] =  function() { document.getElementById("flowplayer-{{ hash }}").innerHTML = "{% filter escapejs %}{% include "djvideo/quicktime.html" %}{% endfilter %}" };
+flowplayer("flowplayer-{{ hash }}", _flowplayer_data, {{ more_flowplayer_data_as_json|safe }});
 </script>

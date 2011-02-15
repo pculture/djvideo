@@ -28,6 +28,7 @@ import re
 from django.conf import settings
 from django.template import Context, Library, Node, Variable, loader, \
     TemplateSyntaxError
+import simplejson
 
 register = Library()
 
@@ -107,7 +108,30 @@ class VideoNode(Node):
         self.context = context
 
     def _generate_flowplayer_data(self, context):
-        return {}
+        '''This generates a Python dict that gets converted to JSON.'''
+        data = {'src': getattr(settings, 'FLOWPLAYER_SWF_URL', None),
+                'wmode': 'transparent',
+                'version': [9, 115]}
+        more_data = {'clip': {'scaling': 'scale'}}
+
+        playlist = []
+        if 'poster' in context:
+            playlist.append({'url': context['poster']})
+        if context.get('poster', None)  or not context.get('autoplay', False):
+            autoplay = False
+        else:
+            autoplay = True
+        playlist.append({'url': context['url'],
+                         'autoPlay': autoplay})
+        more_data['playlist'] = playlist
+
+        
+        if getattr(settings, 'FLOWPLAYER_CONTROLS_URL', None):
+            more_data['plugins'] = {'controls': {
+                    'url': settings.FLOWPLAYER_CONTROLS_URL}}
+        
+        return {'flowplayer_data_as_json': simplejson.dumps(data),
+                'more_flowplayer_data_as_json': simplejson.dumps(more_data)}
 
     def render(self, context):
         new_context = Context()
