@@ -106,6 +106,9 @@ class VideoNode(Node):
     def __init__(self, context):
         self.context = context
 
+    def _generate_flowplayer_data(self, context):
+        return {}
+
     def render(self, context):
         new_context = Context()
         new_context.dicts.extend(context.dicts)
@@ -128,6 +131,8 @@ class VideoNode(Node):
             new_context['mime_type'] = mime_type
         new_context['hash'] = hash(new_context)
         template_name = EMBED_MAPPING.get(mime_type, 'default.html')
+        if template_name == 'flowplayer.html':
+            new_context.update(self._generate_flowplayer_data(context))
         template = loader.get_template('djvideo/%s' % template_name)
         rendered = template.render(new_context)
         user_agent = context['request'].META.get('HTTP_USER_AGENT')
