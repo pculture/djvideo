@@ -112,7 +112,7 @@ class VideoNode(Node):
         data = {'src': getattr(settings, 'FLOWPLAYER_SWF_URL', None),
                 'wmode': 'transparent',
                 'version': [9, 115]}
-        more_data = {'clip': {'scaling': 'scale'}}
+        more_data = {'clip': {'scaling': 'fit'}}
 
         playlist = []
         if 'poster' in context:
