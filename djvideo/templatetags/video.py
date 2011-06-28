@@ -58,7 +58,7 @@ QUICKTIME_MIME_TYPES = ('video/mp4', 'video/quicktime', 'video/x-m4v',
                         'video/x-mp4')
 
 SUPPORTS_VIDEO_TAG = [
-    (re.compile('(Firefox|Shiretoko)/3\.[1-9].*'), OGG_MIME_TYPES),
+    (re.compile('(Firefox|Shiretoko)/((3\.[1-9])|[4-9]).*'), OGG_MIME_TYPES),
     (re.compile(r'Mozilla/5.0 \([^X].+\) .* Chrome/(3\.0\.1(8[2-9]|9)|4)'),
      OGG_MIME_TYPES + QUICKTIME_MIME_TYPES),
     (re.compile(r'Mozilla/5.0 .* Chrome/[5-9]'),
