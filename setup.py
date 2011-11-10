@@ -6,6 +6,9 @@ setup(name="djvideo",
       version=version,
       author='Participatory Culture Foundation',
       license='BSD',
-      packages=find_packages())
+      packages=find_packages(),
+      package_data={
+        '': ['templates/djvideo/*.html']
+        })
 
 
