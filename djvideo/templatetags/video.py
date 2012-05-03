@@ -57,15 +57,35 @@ QUICKTIME_MIME_TYPES = ('video/mp4', 'video/quicktime', 'video/x-m4v',
                         'video/mpeg', 'video/m4v', 'video/mov',
                         'video/x-mp4')
 
+H264_MIME_TYPES = ('video/h264',)
+
+WEBM_MIME_TYPES = ('video/webm', 'audio/webm')
+
+# supported values come (roughly) from
+# http://en.wikipedia.org/wiki/Video_tag#Table
 SUPPORTS_VIDEO_TAG = [
-    (re.compile('(Firefox|Shiretoko)/((3\.[1-9])|[4-9]).*'), OGG_MIME_TYPES),
+    # Firefox >= 3.1
+    (re.compile('(Firefox|Shiretoko)/((3\.[1-9])|[4-9]\.|1[1-9]\.).*'),
+     OGG_MIME_TYPES),
+    # Firefox 4 supports WebM
+    (re.compile('(Firefox|Shiretoko)/([4-9]|[1-9]{2,})\.'),
+     WEBM_MIME_TYPES),
+    # Chrome on Windows/OSX >= 3.0.18
     (re.compile(r'Mozilla/5.0 \([^X].+\) .* Chrome/(3\.0\.1(8[2-9]|9)|4)'),
      OGG_MIME_TYPES + QUICKTIME_MIME_TYPES),
-    (re.compile(r'Mozilla/5.0 .* Chrome/[5-9]'),
+    # Chrome everywhere, starting with 5
+    (re.compile(r'Mozilla/5.0 .* Chrome/([5-9]|[1-9]{2,})\.'),
      # Chrome comes first because it also reports as Safari
      OGG_MIME_TYPES + QUICKTIME_MIME_TYPES),
+    # Chrome 6 supports WebM and H264
+    (re.compile(r'Mozilla/5.0 .* Chrome/([6-9]|[1-9]{2,})\.'),
+     WEBM_MIME_TYPES + H264_MIME_TYPES)
+    # Safari >= 526
     (re.compile(r'Mozilla/5.0 \([^X].+\) .* Safari/(52[6-9]|5[3-9][0-9])\.'),
-     QUICKTIME_MIME_TYPES)
+     QUICKTIME_MIME_TYPES + H264_MIME_TYPES),
+    # Internet Explorer >= 9
+    (re.compile(r'Mozilla/5.0 .* MSIE (9|[1-9]{2,})\.'),
+     QUICKTIME_MIME_TYPES + H264_MIME_TYPES),
     ]
 
 EMBED_MAPPING = {
