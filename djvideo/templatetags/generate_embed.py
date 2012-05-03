@@ -29,6 +29,8 @@ from django.template import (Library, TemplateSyntaxError, Node, Context,
 
 from djvideo.utils import get_variable_or_string
 from djvideo.embed import embed_generators
+from djvideo.templatetags.video import VideoNode, DEFAULT_CONTEXT
+
 
 register = Library()
 
@@ -48,13 +50,16 @@ class EmbedGeneratorNode(Node):
 
         renderer = embed_generators.renderer_for_url(new_context['url'])
         if renderer is None:
-            return ""
-
+            video_context = Context()
+            video_context.dicts.extend(DEFAULT_CONTEXT)
+            video_context.dicts.extend(new_context)
+            node = VideoNode({})
+            return node.render(video_context)
         return renderer.render(new_context)
 
 
 @register.filter
-def supports_embed_generation(url):
+def host_supports_embed_generation(url):
     return embed_generators.supports_embed_generation(url)
 
 
