@@ -79,7 +79,7 @@ SUPPORTS_VIDEO_TAG = [
      OGG_MIME_TYPES + QUICKTIME_MIME_TYPES),
     # Chrome 6 supports WebM and H264
     (re.compile(r'Mozilla/5.0 .* Chrome/([6-9]|[1-9]{2,})\.'),
-     WEBM_MIME_TYPES + H264_MIME_TYPES)
+     WEBM_MIME_TYPES + H264_MIME_TYPES),
     # Safari >= 526
     (re.compile(r'Mozilla/5.0 \([^X].+\) .* Safari/(52[6-9]|5[3-9][0-9])\.'),
      QUICKTIME_MIME_TYPES + H264_MIME_TYPES),
