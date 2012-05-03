@@ -30,13 +30,9 @@ from django.template import Context, Library, Node, Variable, loader, \
     TemplateSyntaxError
 import simplejson
 
-register = Library()
+from djvideo.utils import get_variable_or_string
 
-def _get_variable_or_string(name):
-    if name[0] in '"\'':
-        return name[1:-1]
-    else:
-        return Variable(name)
+register = Library()
 
 ACCEPTED_KEYS = ('title', 'width', 'height', 'autoplay', 'mime_type', 'poster')
 
@@ -201,14 +197,14 @@ def video(parser, token):
     if len(token_contents) < 2:
         raise TemplateSyntaxError(
             '%s tag requires at least one argument' % tag_name)
-    context['url'] = _get_variable_or_string(token_contents[1])
+    context['url'] =  get_variable_or_string(token_contents[1])
     for parts in token_contents[2:]:
         name, value = parts.split('=')
         if name not in ACCEPTED_KEYS:
             raise TemplateSyntaxError(
                 '%s tag does not accept the %r keyword' % (
                     tag_name, name))
-        context[name.strip()] = _get_variable_or_string(value)
+        context[name.strip()] =  get_variable_or_string(value)
 
     return VideoNode(context)
 
