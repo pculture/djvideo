@@ -220,3 +220,11 @@ def is_ogg_media(mime_type):
 @register.filter
 def is_quicktime_media(mime_type):
     return mime_type in QUICKTIME_MIME_TYPES
+
+@register.filter
+def is_h264_media(mime_type):
+    return mime_type in H264_MIME_TYPES
+
+@register.filter
+def is_webm_media(mime_type):
+    return mime_type in WEBM_MIME_TYPES
