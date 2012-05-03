@@ -26,4 +26,4 @@
 from djvideo.embed.base import vidscraper, embed_generators, EmbedGenerator
 
 if vidscraper is not None:
-    from djvideo.embed import youtube
+    from djvideo.embed import youtube, vimeo
