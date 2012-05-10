@@ -71,7 +71,7 @@ class EmbedGeneratorRegistry(object):
                 pass
         return None
 
-    def supports_embed_generation(self, url):
+    def has_embed_generator(self, url):
         return self.renderer_for_url(url) is not None
 
 

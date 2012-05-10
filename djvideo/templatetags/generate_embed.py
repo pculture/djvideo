@@ -54,8 +54,8 @@ class EmbedGeneratorNode(Node):
 
 
 @register.filter
-def host_supports_embed_generation(url):
-    return embed_generators.supports_embed_generation(url)
+def has_embed_generator(url):
+    return embed_generators.has_embed_generator(url)
 
 
 @register.tag
