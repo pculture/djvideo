@@ -26,11 +26,9 @@
 import mimetypes
 import re
 from django.conf import settings
-from django.template import Context, Library, Node, Variable, loader, \
+from django.template import Context, Library, Node, loader, \
     TemplateSyntaxError
 import simplejson
-
-from djvideo.utils import get_variable_or_string
 
 register = Library()
 
@@ -154,10 +152,7 @@ class VideoNode(Node):
         new_context.dicts.extend(context.dicts)
 
         for key, value in self.context.items():
-            if isinstance(value, Variable):
-                new_context[key] = value.resolve(context)
-            else:
-                new_context[key] = value
+            new_context[key] = value.resolve(context)
 
         match = YOUTUBE_VIDEO_RE.match(new_context['url'])
         if match:
@@ -197,14 +192,14 @@ def video(parser, token):
     if len(token_contents) < 2:
         raise TemplateSyntaxError(
             '%s tag requires at least one argument' % tag_name)
-    context['url'] =  get_variable_or_string(token_contents[1])
+    context['url'] =  parser.compile_filter(token_contents[1])
     for parts in token_contents[2:]:
         name, value = parts.split('=')
         if name not in ACCEPTED_KEYS:
             raise TemplateSyntaxError(
                 '%s tag does not accept the %r keyword' % (
                     tag_name, name))
-        context[name.strip()] =  get_variable_or_string(value)
+        context[name.strip()] = parser.compile_filter(value)
 
     return VideoNode(context)
 

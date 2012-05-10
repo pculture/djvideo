@@ -24,10 +24,8 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from django.template import (Library, TemplateSyntaxError, Node, Context,
-                             Variable)
+from django.template import Library, TemplateSyntaxError, Node, Context
 
-from djvideo.utils import get_variable_or_string
 from djvideo.embed import embed_generators
 from djvideo.templatetags.video import VideoNode, DEFAULT_CONTEXT
 
@@ -43,10 +41,7 @@ class EmbedGeneratorNode(Node):
         new_context = Context()
         new_context.dicts.extend(context.dicts)
         for key, value in self.arguments.iteritems():
-            if isinstance(value, Variable):
-                new_context[key] = value.resolve(context)
-            else:
-                new_context[key] = value
+            new_context[key] = value.resolve(context)
 
         renderer = embed_generators.renderer_for_url(new_context['url'])
         if renderer is None:
@@ -71,7 +66,7 @@ def generate_embed(parser, token):
         raise TemplateSyntaxError(
             '%s tag requires at least 1 argument' % tag_name)
     arguments = {
-        'url': get_variable_or_string(token_contents[1])
+        'url': parser.compile_filter(token_contents[1])
         }
     for kwarg in token_contents[2:]:
         if '=' not in kwarg:
@@ -79,6 +74,6 @@ def generate_embed(parser, token):
                 '%s tag does not take more than 1 positional argument: %r' % (
                     tag_name, kwarg))
         key, value = kwarg.split('=', 1)
-        arguments[key.strip()] = get_variable_or_string(value)
+        arguments[key.strip()] = parser.compile_filter(value)
 
     return EmbedGeneratorNode(arguments)
