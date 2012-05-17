@@ -152,7 +152,12 @@ class VideoNode(Node):
         new_context.dicts.extend(context.dicts)
 
         for key, value in self.context.items():
-            new_context[key] = value.resolve(context)
+            # some things in the context (defaults) are not Varibles, so don't
+            # convert them.
+            if hasattr(value, 'resolve'):
+                new_context[key] = value.resolve(context)
+            else:
+                new_context[key] = value
 
         match = YOUTUBE_VIDEO_RE.match(new_context['url'])
         if match:
