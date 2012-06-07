@@ -1,4 +1,4 @@
-# Copyright 2009 - Participatory Culture Foundation
+# Copyright 2009-2012 - Participatory Culture Foundation
 # 
 # This file is part of djvideo.
 # 
@@ -103,49 +103,11 @@ if getattr(settings, 'XSPF_PLAYER_URL', False):
     'audio/mp3': 'mp3.html',
     })
 
-if getattr(settings, 'FLOWPLAYER_SWF_URL', False) and \
-        getattr(settings, 'FLOWPLAYER_JS_URL', False):
-    EMBED_MAPPING.update({
-            'video/mp4': 'flowplayer.html',
-            'video/x-mp4': 'flowplayer.html',
-            'video/m4v': 'flowplayer.html',
-            'video/x-m4v': 'flowplayer.html',
-            'video/x-flv': 'flowplayer.html',
-            'video/flv': 'flowplayer.html',
-
-            })
-
 YOUTUBE_VIDEO_RE = re.compile(r'http://(www.)?youtube.com/watch\?v=(?P<id>.+)')
 
 class VideoNode(Node):
     def __init__(self, context):
         self.context = context
-
-    def _generate_flowplayer_data(self, context):
-        '''This generates a Python dict that gets converted to JSON.'''
-        data = {'src': getattr(settings, 'FLOWPLAYER_SWF_URL', None),
-                'wmode': 'transparent',
-                'version': [9, 115]}
-        more_data = {'clip': {'scaling': 'fit'}}
-
-        playlist = []
-        if 'poster' in context:
-            playlist.append({'url': context['poster']})
-        if context.get('poster', None)  or not context.get('autoplay', False):
-            autoplay = False
-        else:
-            autoplay = True
-        playlist.append({'url': context['url'],
-                         'autoPlay': autoplay})
-        more_data['playlist'] = playlist
-
-        
-        if getattr(settings, 'FLOWPLAYER_CONTROLS_URL', None):
-            more_data['plugins'] = {'controls': {
-                    'url': settings.FLOWPLAYER_CONTROLS_URL}}
-        
-        return {'flowplayer_data_as_json': simplejson.dumps(data),
-                'more_flowplayer_data_as_json': simplejson.dumps(more_data)}
 
     def render(self, context):
         new_context = Context()
@@ -171,8 +133,6 @@ class VideoNode(Node):
             new_context['mime_type'] = mime_type
         new_context['hash'] = hash(new_context)
         template_name = EMBED_MAPPING.get(mime_type, 'default.html')
-        if template_name == 'flowplayer.html':
-            new_context.update(self._generate_flowplayer_data(new_context))
         template = loader.get_template('djvideo/%s' % template_name)
         rendered = template.render(new_context)
         user_agent = context['request'].META.get('HTTP_USER_AGENT')
