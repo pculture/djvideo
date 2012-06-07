@@ -138,14 +138,13 @@ class VideoNode(Node):
         user_agent = context['request'].META.get('HTTP_USER_AGENT')
         if user_agent:
             for regexp, mime_types in SUPPORTS_VIDEO_TAG:
-                if mime_type in mime_types:
-                    if regexp.search(user_agent):
-                        if regexp != SUPPORTS_VIDEO_TAG[0][0]:
-                            # Firefox renders the <obect> fallback tag, causing
-                            # the audio to play twice (Bug #487398)
-                            new_context['fallback'] = rendered
-                        template = loader.get_template('djvideo/videotag.html')
-                        return template.render(new_context)
+                if regexp.search(user_agent):
+                    if regexp != SUPPORTS_VIDEO_TAG[0][0]:
+                        # Firefox renders the <obect> fallback tag, causing
+                        # the audio to play twice (Bug #487398)
+                        new_context['fallback'] = rendered
+                    template = loader.get_template('djvideo/videotag.html')
+                    return template.render(new_context)
         return rendered
 
 
