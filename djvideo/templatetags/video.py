@@ -1,4 +1,4 @@
-# Copyright 2009 - Participatory Culture Foundation
+# Copyright 2009-2012 - Participatory Culture Foundation
 # 
 # This file is part of djvideo.
 # 
@@ -55,33 +55,6 @@ H264_MIME_TYPES = ('video/h264',)
 
 WEBM_MIME_TYPES = ('video/webm', 'audio/webm')
 
-# supported values come (roughly) from
-# http://en.wikipedia.org/wiki/Video_tag#Table
-SUPPORTS_VIDEO_TAG = [
-    # Firefox >= 3.1
-    (re.compile('(Firefox|Shiretoko)/((3\.[1-9])|[4-9]\.|1[1-9]\.).*'),
-     OGG_MIME_TYPES),
-    # Firefox 4 supports WebM
-    (re.compile('(Firefox|Shiretoko)/([4-9]|[1-9]{2,})\.'),
-     WEBM_MIME_TYPES),
-    # Chrome on Windows/OSX >= 3.0.18
-    (re.compile(r'Mozilla/5.0 \([^X].+\) .* Chrome/(3\.0\.1(8[2-9]|9)|4)'),
-     OGG_MIME_TYPES + QUICKTIME_MIME_TYPES),
-    # Chrome everywhere, starting with 5
-    (re.compile(r'Mozilla/5.0 .* Chrome/([5-9]|[1-9]{2,})\.'),
-     # Chrome comes first because it also reports as Safari
-     OGG_MIME_TYPES + QUICKTIME_MIME_TYPES),
-    # Chrome 6 supports WebM and H264
-    (re.compile(r'Mozilla/5.0 .* Chrome/([6-9]|[1-9]{2,})\.'),
-     WEBM_MIME_TYPES + H264_MIME_TYPES),
-    # Safari >= 526
-    (re.compile(r'Mozilla/5.0 \([^X].+\) .* Safari/(52[6-9]|5[3-9][0-9])\.'),
-     QUICKTIME_MIME_TYPES + H264_MIME_TYPES),
-    # Internet Explorer >= 9
-    (re.compile(r'Mozilla/5.0 .* MSIE (9|[1-9]{2,})\.'),
-     QUICKTIME_MIME_TYPES + H264_MIME_TYPES),
-    ]
-
 EMBED_MAPPING = {
     'video/mp4': 'quicktime.html',
     'video/quicktime': 'quicktime.html',
@@ -103,49 +76,11 @@ if getattr(settings, 'XSPF_PLAYER_URL', False):
     'audio/mp3': 'mp3.html',
     })
 
-if getattr(settings, 'FLOWPLAYER_SWF_URL', False) and \
-        getattr(settings, 'FLOWPLAYER_JS_URL', False):
-    EMBED_MAPPING.update({
-            'video/mp4': 'flowplayer.html',
-            'video/x-mp4': 'flowplayer.html',
-            'video/m4v': 'flowplayer.html',
-            'video/x-m4v': 'flowplayer.html',
-            'video/x-flv': 'flowplayer.html',
-            'video/flv': 'flowplayer.html',
-
-            })
-
 YOUTUBE_VIDEO_RE = re.compile(r'http://(www.)?youtube.com/watch\?v=(?P<id>.+)')
 
 class VideoNode(Node):
     def __init__(self, context):
         self.context = context
-
-    def _generate_flowplayer_data(self, context):
-        '''This generates a Python dict that gets converted to JSON.'''
-        data = {'src': getattr(settings, 'FLOWPLAYER_SWF_URL', None),
-                'wmode': 'transparent',
-                'version': [9, 115]}
-        more_data = {'clip': {'scaling': 'fit'}}
-
-        playlist = []
-        if 'poster' in context:
-            playlist.append({'url': context['poster']})
-        if context.get('poster', None)  or not context.get('autoplay', False):
-            autoplay = False
-        else:
-            autoplay = True
-        playlist.append({'url': context['url'],
-                         'autoPlay': autoplay})
-        more_data['playlist'] = playlist
-
-        
-        if getattr(settings, 'FLOWPLAYER_CONTROLS_URL', None):
-            more_data['plugins'] = {'controls': {
-                    'url': settings.FLOWPLAYER_CONTROLS_URL}}
-        
-        return {'flowplayer_data_as_json': simplejson.dumps(data),
-                'more_flowplayer_data_as_json': simplejson.dumps(more_data)}
 
     def render(self, context):
         new_context = Context()
@@ -171,22 +106,11 @@ class VideoNode(Node):
             new_context['mime_type'] = mime_type
         new_context['hash'] = hash(new_context)
         template_name = EMBED_MAPPING.get(mime_type, 'default.html')
-        if template_name == 'flowplayer.html':
-            new_context.update(self._generate_flowplayer_data(new_context))
         template = loader.get_template('djvideo/%s' % template_name)
-        rendered = template.render(new_context)
+        new_context['fallback'] = template.render(new_context)
         user_agent = context['request'].META.get('HTTP_USER_AGENT')
-        if user_agent:
-            for regexp, mime_types in SUPPORTS_VIDEO_TAG:
-                if mime_type in mime_types:
-                    if regexp.search(user_agent):
-                        if regexp != SUPPORTS_VIDEO_TAG[0][0]:
-                            # Firefox renders the <obect> fallback tag, causing
-                            # the audio to play twice (Bug #487398)
-                            new_context['fallback'] = rendered
-                        template = loader.get_template('djvideo/videotag.html')
-                        return template.render(new_context)
-        return rendered
+        template = loader.get_template('djvideo/videotag.html')
+        return template.render(new_context)
 
 
 @register.tag
