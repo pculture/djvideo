@@ -55,33 +55,6 @@ H264_MIME_TYPES = ('video/h264',)
 
 WEBM_MIME_TYPES = ('video/webm', 'audio/webm')
 
-# supported values come (roughly) from
-# http://en.wikipedia.org/wiki/Video_tag#Table
-SUPPORTS_VIDEO_TAG = [
-    # Firefox >= 3.1
-    (re.compile('(Firefox|Shiretoko)/((3\.[1-9])|[4-9]\.|1[1-9]\.).*'),
-     OGG_MIME_TYPES),
-    # Firefox 4 supports WebM
-    (re.compile('(Firefox|Shiretoko)/([4-9]|[1-9]{2,})\.'),
-     WEBM_MIME_TYPES),
-    # Chrome on Windows/OSX >= 3.0.18
-    (re.compile(r'Mozilla/5.0 \([^X].+\) .* Chrome/(3\.0\.1(8[2-9]|9)|4)'),
-     OGG_MIME_TYPES + QUICKTIME_MIME_TYPES),
-    # Chrome everywhere, starting with 5
-    (re.compile(r'Mozilla/5.0 .* Chrome/([5-9]|[1-9]{2,})\.'),
-     # Chrome comes first because it also reports as Safari
-     OGG_MIME_TYPES + QUICKTIME_MIME_TYPES),
-    # Chrome 6 supports WebM and H264
-    (re.compile(r'Mozilla/5.0 .* Chrome/([6-9]|[1-9]{2,})\.'),
-     WEBM_MIME_TYPES + H264_MIME_TYPES),
-    # Safari >= 526
-    (re.compile(r'Mozilla/5.0 \([^X].+\) .* Safari/(52[6-9]|5[3-9][0-9])\.'),
-     QUICKTIME_MIME_TYPES + H264_MIME_TYPES),
-    # Internet Explorer >= 9
-    (re.compile(r'Mozilla/5.0 .* MSIE (9|[1-9]{2,})\.'),
-     QUICKTIME_MIME_TYPES + H264_MIME_TYPES),
-    ]
-
 EMBED_MAPPING = {
     'video/mp4': 'quicktime.html',
     'video/quicktime': 'quicktime.html',
@@ -134,18 +107,10 @@ class VideoNode(Node):
         new_context['hash'] = hash(new_context)
         template_name = EMBED_MAPPING.get(mime_type, 'default.html')
         template = loader.get_template('djvideo/%s' % template_name)
-        rendered = template.render(new_context)
+        new_context['fallback'] = template.render(new_context)
         user_agent = context['request'].META.get('HTTP_USER_AGENT')
-        if user_agent:
-            for regexp, mime_types in SUPPORTS_VIDEO_TAG:
-                if regexp.search(user_agent):
-                    if regexp != SUPPORTS_VIDEO_TAG[0][0]:
-                        # Firefox renders the <obect> fallback tag, causing
-                        # the audio to play twice (Bug #487398)
-                        new_context['fallback'] = rendered
-                    template = loader.get_template('djvideo/videotag.html')
-                    return template.render(new_context)
-        return rendered
+        template = loader.get_template('djvideo/videotag.html')
+        return template.render(new_context)
 
 
 @register.tag
