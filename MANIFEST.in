@@ -1,1 +1,2 @@
 recursive-include djvideo/templates *.html
+recursive-include djvideo/static *.js *.swf *.css *.png *.html *.vtt
