@@ -30,6 +30,8 @@ from django.template import Context, Library, Node, loader, \
     TemplateSyntaxError
 import simplejson
 
+from djvideo.utils import normalize_mimetype
+
 register = Library()
 
 ACCEPTED_KEYS = ('title', 'width', 'height', 'autoplay', 'mime_type', 'poster')
@@ -105,6 +107,9 @@ class VideoNode(Node):
             mime_type, _ = mimetypes.guess_type(new_context['url'])
             new_context['mime_type'] = mime_type
         new_context['hash'] = hash(new_context)
+        if mime_type:
+            mime_type = normalize_mimetype(mime_type)
+            new_context['mime_type'] = mime_type
         template_name = EMBED_MAPPING.get(mime_type, 'default.html')
         template = loader.get_template('djvideo/%s' % template_name)
         new_context['fallback'] = template.render(new_context)

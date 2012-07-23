@@ -28,6 +28,7 @@ from django.template import Library, TemplateSyntaxError, Node, Context
 
 from djvideo.embed import embed_generators
 from djvideo.templatetags.video import VideoNode, DEFAULT_CONTEXT
+from djvideo.utils import normalize_mimetype
 
 
 register = Library()
@@ -42,6 +43,10 @@ class EmbedGeneratorNode(Node):
         new_context.dicts.extend(context.dicts)
         for key, value in self.arguments.iteritems():
             new_context[key] = value.resolve(context)
+
+        if 'mime_type' in new_context:
+            new_context['mime_type'] = normalize_mimetype(
+                                                    new_context['mime_type'])
 
         renderer = embed_generators.renderer_for_url(new_context['url'])
         if renderer is None:
