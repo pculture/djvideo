@@ -23,7 +23,5 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from djvideo.embed.base import vidscraper, embed_generators, EmbedGenerator
-
-if vidscraper is not None:
-    from djvideo.embed import youtube, vimeo
+from djvideo.embed.base import registry, EmbedGenerator
+from djvideo.embed import youtube, vimeo

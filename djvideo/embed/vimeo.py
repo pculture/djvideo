@@ -2,37 +2,22 @@ import urllib
 
 from vidscraper.suites.vimeo import VimeoSuite
 
-from djvideo.embed import EmbedGenerator, embed_generators
+from djvideo.embed import EmbedGenerator, registry
 
 
 class VimeoEmbedGenerator(EmbedGenerator):
-
-    suite = VimeoSuite()
     template = 'djvideo/embed/vimeo.html'
+    # supported arguments generated w/ trial/error from
+    # http://vimeo.com/21770650
     supported_parameters = frozenset((
             'autoplay', 'byline', 'color', 'loop', 'portrait', 'title'))
+    default_context = {'width': 400, 'height': 225}
+
+    def get_context(self, url, context):
+        c = super(VimeoEmbedGenerator, self).get_context(url, context)
+        match = VimeoSuite.video_regex.match(url)
+        c['video_id'] = match.group('video_id')
+        return c
 
 
-    @classmethod
-    def update_context(klass, context):
-        if 'width' not in context:
-            context['width'] = 400
-        if 'height' not in context:
-            context['height'] = 225
-        match = klass.suite.video_regex.match(context['url'])
-        context['video_id'] = match.group('video_id')
-
-        # supported arguments generated w/ trial/error from
-        # http://vimeo.com/21770650
-        parameters = {}
-        for p in klass.supported_parameters:
-            if p in context:
-                parameters[p] = context[p]
-
-        if parameters:
-            context['arguments'] = '?' + urllib.urlencode(parameters)
-        else:
-            context['arguments'] = ''
-
-
-embed_generators.register(VimeoEmbedGenerator())
+registry.register(VimeoEmbedGenerator, VimeoSuite)

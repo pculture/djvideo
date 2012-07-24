@@ -26,7 +26,7 @@
 from django.template import Library, TemplateSyntaxError, Node
 from django.template.base import kwarg_re
 
-from djvideo.embed import embed_generators
+from djvideo.embed import registry
 from djvideo.templatetags.video import VideoNode, DEFAULT_CONTEXT
 from djvideo.utils import normalize_mimetype
 
@@ -41,33 +41,36 @@ class EmbedGeneratorNode(Node):
 
     def render(self, context):
         url = self.url.resolve(context)
-        renderer = embed_generators.renderer_for_url(url)
+        generator = registry.get_generator(url)
 
-        if renderer is None:
+        if generator is None:
             context.update(DEFAULT_CONTEXT)
-            renderer = VideoNode({})
+        else:
+            context.update(generator.default_context)
 
         # pushes a new dict into the context.
         kwargs = dict((key, value.resolve(context))
                        for key, value in self.kwargs.iteritems())
         context.update(kwargs)
-        context['url'] = url
 
-        if 'mime_type' in context:
-            context['mime_type'] = normalize_mimetype(context['mime_type'])
-
-        rendered = renderer.render(context)
+        if generator is None:
+            # Temporary step until a VideoNodeGenerator can be written.
+            if 'mime_type' in context:
+                context['mime_type'] = normalize_mimetype(context['mime_type'])
+            context['url'] = url
+            node = VideoNode(self.url, self.kwargs)
+            rendered = node.render(context)
+        else:
+            rendered = generator.generate(url, context)
 
         context.pop()
-
-        if isinstance(renderer, VideoNode):
-            context.pop()
+        context.pop()
         return rendered
 
 
 @register.filter
 def has_embed_generator(url):
-    return embed_generators.has_embed_generator(url)
+    return registry.get_generator(url) is not None
 
 
 @register.tag

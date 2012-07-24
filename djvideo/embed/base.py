@@ -23,58 +23,57 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-try:
-    import vidscraper
-except ImportError:
-    vidscraper = None
-else:
-    from vidscraper.suites import registry
-    from vidscraper.errors import CantIdentifyUrl
-
 from django.template import loader
+
+from djvideo.utils import normalize_mimetype
 
 
 class EmbedGenerator(object):
-
-    suite = None
+    #: Template which will be used to render the embed code for this
+    #: generator.
     template = None
+    supported_parameters = frozenset()
+    default_context = {}
 
-    def update_context(self, context):
-        pass
+    def get_context(self, url, context):
+        c = {
+            'url': url,
+            'parameters': dict((key, context[key])
+                               for key in self.supported_parameters
+                               if key in context)
+        }
+        if 'mime_type' in context:
+            c['mime_type'] = normalize_mimetype(context['mime_type'])
+        return c
 
-    def render(self, context):
-        self.update_context(context)
-        template = loader.get_template(self.template)
-        return template.render(context)
+    def get_template(self):
+        if self.template is None:
+            raise NotImplementedError
+        return self.template
+
+    def generate(self, url, context):
+        context.update(self.get_context(url, context))
+        template = loader.get_template(self.get_template())
+        rendered = template.render(context)
+        context.pop()
+        return rendered
 
 
 class EmbedGeneratorRegistry(object):
-
     def __init__(self):
-        self.suite_to_renderer = {}
+        self.generators = {}
 
-    def register(self, renderer):
-        if vidscraper is None:
-            return
-        self.suite_to_renderer[renderer.suite] = renderer
+    def register(self, generator, suite):
+        self.generators[suite()] = generator()
 
-    def renderer_for_url(self, url):
-        if vidscraper is None:
-            return None
-        if not url: # "" or None
-            return None
-        for suite, renderer in self.suite_to_renderer.iteritems():
+    def get_generator(self, url):
+        for suite, generator in self.generators.iteritems():
             try:
                 if suite.handles_video_url(url):
-                    return renderer
+                    return generator
             except NotImplementedError:
                 pass
         return None
 
-    def has_embed_generator(self, url):
-        return self.renderer_for_url(url) is not None
 
-
-embed_generators = EmbedGeneratorRegistry()
-
-
+registry = EmbedGeneratorRegistry()
