@@ -26,8 +26,7 @@
 import mimetypes
 import re
 from django.conf import settings
-from django.template import Context, Library, Node, loader, \
-    TemplateSyntaxError
+from django.template import Library, Node, loader, TemplateSyntaxError
 import simplejson
 
 from djvideo.utils import normalize_mimetype
@@ -81,61 +80,57 @@ if getattr(settings, 'XSPF_PLAYER_URL', False):
 YOUTUBE_VIDEO_RE = re.compile(r'http://(www.)?youtube.com/watch\?v=(?P<id>.+)')
 
 class VideoNode(Node):
-    def __init__(self, context):
-        self.context = context
+    def __init__(self, arguments):
+        self.arguments = arguments
 
     def render(self, context):
-        new_context = Context()
-        new_context.dicts.extend(context.dicts)
+        arguments = dict((key, value.resolve(context))
+                         for key, value in self.arguments.iteritems())
+        # pushes a new dict into the context.
+        context.update(arguments)
 
-        for key, value in self.context.items():
-            # some things in the context (defaults) are not Varibles, so don't
-            # convert them.
-            if hasattr(value, 'resolve'):
-                new_context[key] = value.resolve(context)
-            else:
-                new_context[key] = value
-
-        match = YOUTUBE_VIDEO_RE.match(new_context['url'])
+        match = YOUTUBE_VIDEO_RE.match(context['url'])
         if match:
             url = 'http://www.youtube.com/v/%s&hl=en&fs=1' % match.group('id')
-            new_context['url'] = url
-            new_context['mime_type'] = 'video/flv'
+            context['url'] = url
+            context['mime_type'] = 'video/flv'
 
-        mime_type = new_context.get('mime_type')
+        mime_type = context.get('mime_type')
         if not mime_type:
-            mime_type, _ = mimetypes.guess_type(new_context['url'])
-            new_context['mime_type'] = mime_type
-        new_context['hash'] = hash(new_context)
+            mime_type, _ = mimetypes.guess_type(context['url'])
+            context['mime_type'] = mime_type
+        context['hash'] = hash(context)
         if mime_type:
             mime_type = normalize_mimetype(mime_type)
-            new_context['mime_type'] = mime_type
+            context['mime_type'] = mime_type
         template_name = EMBED_MAPPING.get(mime_type, 'default.html')
         template = loader.get_template('djvideo/%s' % template_name)
-        new_context['fallback'] = template.render(new_context)
+        context['fallback'] = template.render(context)
         user_agent = context['request'].META.get('HTTP_USER_AGENT')
         template = loader.get_template('djvideo/videotag.html')
-        return template.render(new_context)
+        rendered = template.render(context)
+        context.pop()
+        return rendered
 
 
 @register.tag
 def video(parser, token):
     token_contents = token.split_contents()
     tag_name = token_contents[0]
-    context = DEFAULT_CONTEXT.copy()
+    arguments = DEFAULT_CONTEXT.copy()
     if len(token_contents) < 2:
         raise TemplateSyntaxError(
             '%s tag requires at least one argument' % tag_name)
-    context['url'] =  parser.compile_filter(token_contents[1])
+    arguments['url'] =  parser.compile_filter(token_contents[1])
     for parts in token_contents[2:]:
         name, value = parts.split('=')
         if name not in ACCEPTED_KEYS:
             raise TemplateSyntaxError(
                 '%s tag does not accept the %r keyword' % (
                     tag_name, name))
-        context[name.strip()] = parser.compile_filter(value)
+        arguments[name.strip()] = parser.compile_filter(value)
 
-    return VideoNode(context)
+    return VideoNode(arguments)
 
 
 @register.filter

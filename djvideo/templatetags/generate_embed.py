@@ -24,7 +24,7 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from django.template import Library, TemplateSyntaxError, Node, Context
+from django.template import Library, TemplateSyntaxError, Node
 
 from djvideo.embed import embed_generators
 from djvideo.templatetags.video import VideoNode, DEFAULT_CONTEXT
@@ -39,23 +39,27 @@ class EmbedGeneratorNode(Node):
         self.arguments = arguments
 
     def render(self, context):
-        new_context = Context()
-        new_context.dicts.extend(context.dicts)
-        for key, value in self.arguments.iteritems():
-            new_context[key] = value.resolve(context)
+        arguments = dict((key, value.resolve(context))
+                         for key, value in self.arguments.iteritems())
+        renderer = embed_generators.renderer_for_url(arguments['url'])
 
-        if 'mime_type' in new_context:
-            new_context['mime_type'] = normalize_mimetype(
-                                                    new_context['mime_type'])
-
-        renderer = embed_generators.renderer_for_url(new_context['url'])
         if renderer is None:
-            video_context = Context()
-            video_context.dicts.extend(DEFAULT_CONTEXT)
-            video_context.dicts.extend(new_context)
-            node = VideoNode({})
-            return node.render(video_context)
-        return renderer.render(new_context)
+            context.update(DEFAULT_CONTEXT)
+            renderer = VideoNode({})
+
+        # pushes a new dict into the context.
+        context.update(arguments)
+
+        if 'mime_type' in context:
+            context['mime_type'] = normalize_mimetype(context['mime_type'])
+
+        rendered = renderer.render(context)
+
+        context.pop()
+
+        if isinstance(renderer, VideoNode):
+            context.pop()
+        return rendered
 
 
 @register.filter
