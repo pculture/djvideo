@@ -27,6 +27,7 @@ import mimetypes
 import re
 from django.conf import settings
 from django.template import Library, Node, loader, TemplateSyntaxError
+from django.template.base import kwarg_re
 import simplejson
 
 from djvideo.utils import normalize_mimetype
@@ -80,14 +81,17 @@ if getattr(settings, 'XSPF_PLAYER_URL', False):
 YOUTUBE_VIDEO_RE = re.compile(r'http://(www.)?youtube.com/watch\?v=(?P<id>.+)')
 
 class VideoNode(Node):
-    def __init__(self, arguments):
-        self.arguments = arguments
+    def __init__(self, url, kwargs):
+        self.url = url
+        self.kwargs = kwargs
 
     def render(self, context):
-        arguments = dict((key, value.resolve(context))
-                         for key, value in self.arguments.iteritems())
+        url = self.url.resolve(context)
         # pushes a new dict into the context.
-        context.update(arguments)
+        kwargs = dict((key, value.resolve(context))
+                       for key, value in self.kwargs.iteritems())
+        context.update(kwargs)
+        context['url'] = url
 
         match = YOUTUBE_VIDEO_RE.match(context['url'])
         if match:
@@ -115,22 +119,35 @@ class VideoNode(Node):
 
 @register.tag
 def video(parser, token):
-    token_contents = token.split_contents()
-    tag_name = token_contents[0]
-    arguments = DEFAULT_CONTEXT.copy()
-    if len(token_contents) < 2:
+    bits = token.split_contents()
+    tag_name = bits[0]
+
+    if len(bits) < 2:
         raise TemplateSyntaxError(
             '%s tag requires at least one argument' % tag_name)
-    arguments['url'] =  parser.compile_filter(token_contents[1])
-    for parts in token_contents[2:]:
-        name, value = parts.split('=')
-        if name not in ACCEPTED_KEYS:
-            raise TemplateSyntaxError(
-                '%s tag does not accept the %r keyword' % (
-                    tag_name, name))
-        arguments[name.strip()] = parser.compile_filter(value)
 
-    return VideoNode(arguments)
+    url = parser.compile_filter(bits[1])
+    kwargs = DEFAULT_CONTEXT.copy()
+
+    bits = bits[2:]
+
+    for bit in bits:
+        match = kwarg_re.match(bit)
+        if not match:
+            raise TemplateSyntaxError(
+                    'Malformed arguments to {0} tag.'.format(tag_name))
+        key, value = match.groups()
+        if key:
+            if key not in ACCEPTED_KEYS:
+                raise TemplateSyntaxError(
+                    '{0} tag does not accept the {1} keyword'.format(
+                        tag_name, key))
+            kwargs[key] = parser.compile_filter(value)
+        else:
+            raise TemplateSyntaxError('{0} tag only takes one positional '
+                                      'argument.'.format(tag_name))
+
+    return VideoNode(url, kwargs)
 
 
 @register.filter

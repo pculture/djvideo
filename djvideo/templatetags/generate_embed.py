@@ -23,8 +23,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 from django.template import Library, TemplateSyntaxError, Node
+from django.template.base import kwarg_re
 
 from djvideo.embed import embed_generators
 from djvideo.templatetags.video import VideoNode, DEFAULT_CONTEXT
@@ -35,20 +35,23 @@ register = Library()
 
 
 class EmbedGeneratorNode(Node):
-    def __init__(self, arguments):
-        self.arguments = arguments
+    def __init__(self, url, kwargs):
+        self.url = url
+        self.kwargs = kwargs
 
     def render(self, context):
-        arguments = dict((key, value.resolve(context))
-                         for key, value in self.arguments.iteritems())
-        renderer = embed_generators.renderer_for_url(arguments['url'])
+        url = self.url.resolve(context)
+        renderer = embed_generators.renderer_for_url(url)
 
         if renderer is None:
             context.update(DEFAULT_CONTEXT)
             renderer = VideoNode({})
 
         # pushes a new dict into the context.
-        context.update(arguments)
+        kwargs = dict((key, value.resolve(context))
+                       for key, value in self.kwargs.iteritems())
+        context.update(kwargs)
+        context['url'] = url
 
         if 'mime_type' in context:
             context['mime_type'] = normalize_mimetype(context['mime_type'])
@@ -69,20 +72,34 @@ def has_embed_generator(url):
 
 @register.tag
 def generate_embed(parser, token):
-    token_contents = token.split_contents()
-    tag_name = token_contents[0]
-    if len(token_contents) < 2:
-        raise TemplateSyntaxError(
-            '%s tag requires at least 1 argument' % tag_name)
-    arguments = {
-        'url': parser.compile_filter(token_contents[1])
-        }
-    for kwarg in token_contents[2:]:
-        if '=' not in kwarg:
-            raise TemplateSyntaxError(
-                '%s tag does not take more than 1 positional argument: %r' % (
-                    tag_name, kwarg))
-        key, value = kwarg.split('=', 1)
-        arguments[key.strip()] = parser.compile_filter(value)
+    """
+    Includes a template suitable for generating embed code for the given url.
+    Additional kwargs may be supplied, which will be passed on as parameters
+    for embedding - for example, autoplay values.
 
-    return EmbedGeneratorNode(arguments)
+        {% generate_embed "http://www.youtube.com/watch?v=J_DV9b0x7v4" autoplay=1 %}
+
+    """
+    bits = token.split_contents()
+    tag_name = bits[0]
+    if len(bits) < 2:
+        raise TemplateSyntaxError(
+            '{0} tag requires at least 1 argument'.format(tag_name))
+
+    url = parser.compile_filter(bits[1])
+    kwargs = {}
+
+    bits = bits[2:]
+
+    for bit in bits:
+        match = kwarg_re.match(bit)
+        if not match:
+            raise TemplateSyntaxError(
+                    'Malformed arguments to {0} tag.'.format(tag_name))
+        key, value = match.groups()
+        if key:
+            kwargs[key] = parser.compile_filter(value)
+        else:
+            raise TemplateSyntaxError('{0} tag only takes one positional '
+                                      'argument.'.format(tag_name))
+    return EmbedGeneratorNode(url, kwargs)
