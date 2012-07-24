@@ -23,17 +23,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import re
-
 from vidscraper.suites.youtube import YouTubeSuite
 
 from djvideo.embed import EmbedGenerator, registry
 
 
-YOUTUBE_RE = re.compile(YouTubeSuite.video_regex)
-
-
 class YouTubeEmbedGenerator(EmbedGenerator):
+    suite = YouTubeSuite()
     template = 'djvideo/embed/youtube.html'
     # supported arguments listed at
     # https://developers.google.com/youtube/player_parameters#Parameters
@@ -46,9 +42,12 @@ class YouTubeEmbedGenerator(EmbedGenerator):
 
     def get_context(self, url, context):
         c = super(YouTubeEmbedGenerator, self).get_context(url, context)
-        match = YOUTUBE_RE.match(url)
+        match = self.suite.video_regex.match(url)
         c['video_id'] = match.group('video_id')
         return c
 
+    def handles_video_url(self, url):
+        return self.suite.handles_video_url(url)
 
-registry.register(YouTubeEmbedGenerator, YouTubeSuite)
+
+registry.register(YouTubeEmbedGenerator)

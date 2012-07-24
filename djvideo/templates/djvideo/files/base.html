@@ -35,5 +35,5 @@
 
 <video width="{{ width }}" height="{{ height }}" controls="controls" autobuffer="autobuffer" {% if autoplay %} autoplay="autoplay"{% endif %} {% if poster %}poster="{{ poster }}"{% endif %} class="video-js vjs-default-skin" preload="auto" data-setup="{}">
   <source src="{{ url }}"{% if mime_type %} type="{{ mime_type }}"{% endif %}>
-  {{ fallback }}
+  	{% include fallback_template %}
 </video>

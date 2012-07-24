@@ -23,24 +23,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import mimetypes
-import re
-from django.conf import settings
-from django.template import Library, Node, loader, TemplateSyntaxError
-from django.template.base import kwarg_re
+import warnings
 
-from djvideo.utils import normalize_mimetype
+from django.template import Library
+
+from djvideo.templatetags.generate_embed import generate_embed
 
 register = Library()
 
-ACCEPTED_KEYS = ('title', 'width', 'height', 'autoplay', 'mime_type', 'poster')
-
-DEFAULT_CONTEXT = {
-    'height': 360,
-    'width': 480,
-    'autoplay': True,
-    'settings': settings
-    }
 
 OGG_MIME_TYPES = ('application/ogg', 'video/ogg', 'audio/ogg',
                   'application/annodex', 'video/annodex', 'audio/annodex',
@@ -56,96 +46,12 @@ H264_MIME_TYPES = ('video/h264',)
 
 WEBM_MIME_TYPES = ('video/webm', 'audio/webm')
 
-EMBED_MAPPING = {
-    'video/mp4': 'quicktime.html',
-    'video/quicktime': 'quicktime.html',
-    'video/x-m4v': 'quicktime.html',
-    'video/mpeg': 'quicktime.html',
-    'video/m4v': 'quicktime.html',
-    'video/mov': 'quicktime.html',
-    'video/x-mp4': 'quicktime.html',
-    'application/x-shockwave-flash': 'flash.html',
-    'video/x-flv': 'flash.html',
-    'video/flv': 'flash.html',
-}
-
-if getattr(settings, 'XSPF_PLAYER_URL', False):
-    EMBED_MAPPING.update({
-    'audio/mpeg': 'mp3.html',
-    'audio/x-m4a': 'mp3.html',
-    'audio/mp4': 'mp3.html',
-    'audio/mp3': 'mp3.html',
-    })
-
-YOUTUBE_VIDEO_RE = re.compile(r'http://(www.)?youtube.com/watch\?v=(?P<id>.+)')
-
-class VideoNode(Node):
-    def __init__(self, url, kwargs):
-        self.url = url
-        self.kwargs = kwargs
-
-    def render(self, context):
-        url = self.url.resolve(context)
-        # pushes a new dict into the context.
-        kwargs = dict((key, value.resolve(context))
-                       for key, value in self.kwargs.iteritems())
-        context.update(kwargs)
-        context['url'] = url
-
-        match = YOUTUBE_VIDEO_RE.match(context['url'])
-        if match:
-            url = 'http://www.youtube.com/v/%s&hl=en&fs=1' % match.group('id')
-            context['url'] = url
-            context['mime_type'] = 'video/flv'
-
-        mime_type = context.get('mime_type')
-        if not mime_type:
-            mime_type, _ = mimetypes.guess_type(context['url'])
-            context['mime_type'] = mime_type
-        context['hash'] = hash(context)
-        if mime_type:
-            mime_type = normalize_mimetype(mime_type)
-            context['mime_type'] = mime_type
-        template_name = EMBED_MAPPING.get(mime_type, 'default.html')
-        template = loader.get_template('djvideo/%s' % template_name)
-        context['fallback'] = template.render(context)
-        template = loader.get_template('djvideo/videotag.html')
-        rendered = template.render(context)
-        context.pop()
-        return rendered
-
 
 @register.tag
 def video(parser, token):
-    bits = token.split_contents()
-    tag_name = bits[0]
-
-    if len(bits) < 2:
-        raise TemplateSyntaxError(
-            '%s tag requires at least one argument' % tag_name)
-
-    url = parser.compile_filter(bits[1])
-    kwargs = DEFAULT_CONTEXT.copy()
-
-    bits = bits[2:]
-
-    for bit in bits:
-        match = kwarg_re.match(bit)
-        if not match:
-            raise TemplateSyntaxError(
-                    'Malformed arguments to {0} tag.'.format(tag_name))
-        key, value = match.groups()
-        if key:
-            if key not in ACCEPTED_KEYS:
-                raise TemplateSyntaxError(
-                    '{0} tag does not accept the {1} keyword'.format(
-                        tag_name, key))
-            kwargs[key] = parser.compile_filter(value)
-        else:
-            raise TemplateSyntaxError('{0} tag only takes one positional '
-                                      'argument.'.format(tag_name))
-
-    return VideoNode(url, kwargs)
+    warnings.warn("{% video %} tag is deprecated. Use {% generate_embed %} "
+                  "instead.")
+    return generate_embed(parser, token)
 
 
 @register.filter

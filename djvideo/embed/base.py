@@ -46,30 +46,39 @@ class EmbedGenerator(object):
             c['mime_type'] = normalize_mimetype(context['mime_type'])
         return c
 
-    def get_template(self):
-        if self.template is None:
-            raise NotImplementedError
-        return self.template
-
     def generate(self, url, context):
         context.update(self.get_context(url, context))
-        template = loader.get_template(self.get_template())
+        template = loader.get_template(self.template)
         rendered = template.render(context)
         context.pop()
         return rendered
 
+    def handles_url(self, url):
+        raise NotImplementedError
+
 
 class EmbedGeneratorRegistry(object):
     def __init__(self):
-        self.generators = {}
+        self._generators = []
+        self._fallback = None
 
-    def register(self, generator, suite):
-        self.generators[suite()] = generator()
+    @property
+    def generators(self):
+        for generator in self._generators:
+            yield generator
+        if self._fallback is not None:
+            yield self._fallback
+
+    def register(self, generator):
+        self._generators.append(generator())
+
+    def register_fallback(self, generator):
+        self._fallback = generator()
 
     def get_generator(self, url):
-        for suite, generator in self.generators.iteritems():
+        for generator in self.generators:
             try:
-                if suite.handles_video_url(url):
+                if generator.handles_video_url(url):
                     return generator
             except NotImplementedError:
                 pass

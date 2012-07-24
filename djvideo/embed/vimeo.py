@@ -29,6 +29,7 @@ from djvideo.embed import EmbedGenerator, registry
 
 
 class VimeoEmbedGenerator(EmbedGenerator):
+    suite = VimeoSuite()
     template = 'djvideo/embed/vimeo.html'
     # supported arguments generated w/ trial/error from
     # http://vimeo.com/21770650
@@ -38,9 +39,12 @@ class VimeoEmbedGenerator(EmbedGenerator):
 
     def get_context(self, url, context):
         c = super(VimeoEmbedGenerator, self).get_context(url, context)
-        match = VimeoSuite.video_regex.match(url)
+        match = self.suite.video_regex.match(url)
         c['video_id'] = match.group('video_id')
         return c
 
+    def handles_video_url(self, url):
+        return self.suite.handles_video_url(url)
 
-registry.register(VimeoEmbedGenerator, VimeoSuite)
+
+registry.register(VimeoEmbedGenerator)
