@@ -28,7 +28,6 @@ import re
 from django.conf import settings
 from django.template import Library, Node, loader, TemplateSyntaxError
 from django.template.base import kwarg_re
-import simplejson
 
 from djvideo.utils import normalize_mimetype
 
@@ -110,7 +109,6 @@ class VideoNode(Node):
         template_name = EMBED_MAPPING.get(mime_type, 'default.html')
         template = loader.get_template('djvideo/%s' % template_name)
         context['fallback'] = template.render(context)
-        user_agent = context['request'].META.get('HTTP_USER_AGENT')
         template = loader.get_template('djvideo/videotag.html')
         rendered = template.render(context)
         context.pop()
