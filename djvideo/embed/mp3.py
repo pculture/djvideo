@@ -23,5 +23,22 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from djvideo.embed.base import registry, EmbedGenerator
-from djvideo.embed import youtube, vimeo, mp3, files
+import re
+
+from djvideo.embed import EmbedGenerator, registry
+
+class Mp3FileEmbedGenerator(EmbedGenerator):
+    """
+    Mp3FileEmbedGenerator handles urls ending with '.mp3' 
+
+    """
+    template = 'djvideo/files/mp3.html'
+    supported_parameters = frozenset(('title', 'width', 'height', 'autoplay',
+                                      'mime_type', 'poster'))
+
+    def handles_video_url(self, url):
+        "Returns True if the url ends in `.mp3`."
+        return True if re.match(r'.*\.mp3', url) else False
+
+
+registry.register(Mp3FileEmbedGenerator)

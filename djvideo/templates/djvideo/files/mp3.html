@@ -1,4 +1,5 @@
-# Copyright 2012 - Participatory Culture Foundation
+{% comment %}
+# Copyright 2009 - Participatory Culture Foundation
 # 
 # This file is part of djvideo.
 # 
@@ -22,6 +23,10 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+{% endcomment %}
 
-from djvideo.embed.base import registry, EmbedGenerator
-from djvideo.embed import youtube, vimeo, mp3, files
+{% load static %}
+
+<object type="application/x-shockwave-flash" width="400" height="15" data="{% static 'djvideo/xspf/xspf_player_slim.swf' %}?song_url={{ url|urlencode }}&amp;song_title={{ parameters.title|urlencode }}">
+	<param name="movie" value="{% static 'djvideo/xspf/xspf_player_slim.swf' %}?song_url={{ url|urlencode }}&amp;song_title={{ parameters.title|urlencode }}" />
+</object>
