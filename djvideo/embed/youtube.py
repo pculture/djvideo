@@ -23,13 +23,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from vidscraper.suites.youtube import YouTubeSuite
+from vidscraper.exceptions import UnhandledVideo
+from vidscraper.suites.youtube import PathMixin
 
 from djvideo.embed import EmbedGenerator, registry
 
 
-class YouTubeEmbedGenerator(EmbedGenerator):
-    suite = YouTubeSuite()
+class YouTubeEmbedGenerator(PathMixin, EmbedGenerator):
     template = 'djvideo/embed/youtube.html'
     # supported arguments listed at
     # https://developers.google.com/youtube/player_parameters#Parameters
@@ -42,12 +42,15 @@ class YouTubeEmbedGenerator(EmbedGenerator):
 
     def get_context(self, url, context):
         c = super(YouTubeEmbedGenerator, self).get_context(url, context)
-        match = self.suite.video_regex.match(url)
-        c['video_id'] = match.group('video_id')
+        c.update(self.get_url_data(url))
         return c
 
     def handles_video_url(self, url):
-        return self.suite.handles_video_url(url)
+        try:
+            self.get_url_data(url)
+        except UnhandledVideo:
+            return False
+        return True
 
 
 registry.register(YouTubeEmbedGenerator)
