@@ -23,29 +23,31 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from vidscraper.suites.vimeo import VimeoSuite
+from bs4 import BeautifulSoup
+from vidscraper.suites.blip import BlipSuite
 
 from djvideo.embed import EmbedGenerator, registry
 
 
-class VimeoEmbedGenerator(EmbedGenerator):
-    suite = VimeoSuite()
-    template = 'djvideo/vimeo.html'
-    # supported arguments generated w/ trial/error from
-    # http://vimeo.com/21770650
-    supported_parameters = frozenset((
-            'autoplay', 'byline', 'color', 'loop', 'portrait', 'title'))
-    default_context = {'width': 400, 'height': 225}
+class BlipEmbedGenerator(EmbedGenerator):
+    suite = BlipSuite()
+    template = 'djvideo/blip.html'
+    supported_parameters = frozenset()
+    default_context = {'width': 550, 'height': 443}
 
     def get_context(self, url, context):
-        c = super(VimeoEmbedGenerator, self).get_context(url, context)
-
-        match = self.suite.video_regex.match(url)
-        c['video_id'] = match.group('video_id')
+        c = super(BlipEmbedGenerator, self).get_context(url, context)
+        embed_code = context['current_video'].embed_code
+        soup = BeautifulSoup(embed_code)
+        try:
+            video_id = soup.embed['src'].rsplit("#", 1)[1]
+        except (KeyError, TypeError, AttributeError, IndexError):
+            video_id = ''
+        c['video_id'] = video_id
         return c
 
     def handles_video_url(self, url):
         return self.suite.handles_video_url(url)
 
 
-registry.register(VimeoEmbedGenerator)
+registry.register(BlipEmbedGenerator)

@@ -24,4 +24,4 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from djvideo.embed.base import registry, EmbedGenerator
-from djvideo.embed import youtube, vimeo, mp3, files
+from djvideo.embed import youtube, vimeo, mp3, files, blip

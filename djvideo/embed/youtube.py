@@ -30,7 +30,7 @@ from djvideo.embed import EmbedGenerator, registry
 
 class YouTubeEmbedGenerator(EmbedGenerator):
     suite = YouTubeSuite()
-    template = 'djvideo/embed/youtube.html'
+    template = 'djvideo/youtube.html'
     # supported arguments listed at
     # https://developers.google.com/youtube/player_parameters#Parameters
     supported_parameters = frozenset((
