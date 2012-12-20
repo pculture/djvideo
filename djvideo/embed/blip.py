@@ -23,5 +23,31 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from djvideo.embed.base import registry, EmbedGenerator
-from djvideo.embed import youtube, vimeo, mp3, files, blip
+from bs4 import BeautifulSoup
+from vidscraper.suites.blip import BlipSuite
+
+from djvideo.embed import EmbedGenerator, registry
+
+
+class BlipEmbedGenerator(EmbedGenerator):
+    suite = BlipSuite()
+    template = 'djvideo/blip.html'
+    supported_parameters = frozenset()
+    default_context = {'width': 550, 'height': 443}
+
+    def get_context(self, url, context):
+        c = super(BlipEmbedGenerator, self).get_context(url, context)
+        embed_code = context['current_video'].embed_code
+        soup = BeautifulSoup(embed_code)
+        try:
+            video_id = soup.embed['src'].rsplit("#", 1)[1]
+        except (KeyError, TypeError, AttributeError, IndexError):
+            video_id = ''
+        c['video_id'] = video_id
+        return c
+
+    def handles_video_url(self, url):
+        return self.suite.handles_video_url(url)
+
+
+registry.register(BlipEmbedGenerator)

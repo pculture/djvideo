@@ -30,7 +30,7 @@ from djvideo.embed import EmbedGenerator, registry
 
 
 class VimeoEmbedGenerator(PathMixin, EmbedGenerator):
-    template = 'djvideo/embed/vimeo.html'
+    template = 'djvideo/vimeo.html'
     # supported arguments generated w/ trial/error from
     # http://vimeo.com/21770650
     supported_parameters = frozenset((
