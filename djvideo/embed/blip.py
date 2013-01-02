@@ -24,13 +24,13 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from bs4 import BeautifulSoup
-from vidscraper.suites.blip import BlipSuite
+from vidscraper.suites.blip import Suite
 
 from djvideo.embed import EmbedGenerator, registry
 
 
 class BlipEmbedGenerator(EmbedGenerator):
-    suite = BlipSuite()
+    suite = Suite()
     template = 'djvideo/blip.html'
     supported_parameters = frozenset()
     default_context = {'width': 550, 'height': 443}
@@ -47,7 +47,7 @@ class BlipEmbedGenerator(EmbedGenerator):
         return c
 
     def handles_video_url(self, url):
-        return self.suite.handles_video_url(url)
+        return self.suite.handles_video(url)
 
 
 registry.register(BlipEmbedGenerator)
